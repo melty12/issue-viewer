@@ -1,7 +1,10 @@
-import { combineReducers } from "redux"
+import { combineReducers } from "redux";
+import issuesDisplaySlice from "../features/issuesDisplay/issuesDisplaySlice";
 
-const rootReducer = combineReducers({})
+const rootReducer = combineReducers({
+  issueDisplay: issuesDisplaySlice
+});
 
-export type RootState = ReturnType<typeof rootReducer>
+export type RootState = ReturnType<typeof rootReducer>;
 
-export default rootReducer
+export default rootReducer;
