@@ -1,50 +1,54 @@
-import React, { useState } from 'react'
-import './App.css'
+import React, { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { RootState } from "./rootReducer";
 
-import { RepoSearchForm } from '../features/repoSearch/RepoSearchForm'
-import { IssuesListPage } from '../features/issuesList/IssuesListPage'
-import { IssueDetailsPage } from '../features/issueDetails/IssueDetailsPage'
+import { RepoSearchForm } from "../features/repoSearch/RepoSearchForm";
+import { IssuesListPage } from "../features/issuesList/IssuesListPage";
+import { IssueDetailsPage } from "../features/issueDetails/IssueDetailsPage";
 
-const ORG = 'rails'
-const REPO = 'rails'
+import {
+  displayRepo,
+  setCurrentDisplayType,
+  setCurrentPage
+} from "../features/issuesDisplay/issuesDisplaySlice";
+
+import "./App.css";
 
 type CurrentDisplay =
   | {
-      type: 'issues'
+      type: "issues";
     }
   | {
-      type: 'comments'
-      issueId: number
-    }
+      type: "comments";
+      issueId: number;
+    };
 
 const App: React.FC = () => {
-  const [org, setOrg] = useState(ORG)
-  const [repo, setRepo] = useState(REPO)
-  const [page, setPage] = useState(1)
-  const [currentDisplay, setCurrentDisplay] = useState<CurrentDisplay>({
-    type: 'issues'
-  })
+  const dispatch = useDispatch();
+
+  const { org, repo, displayType, page, issueId } = useSelector(
+    (state: RootState) => state.issueDisplay
+  );
 
   const setOrgAndRepo = (org: string, repo: string) => {
-    setOrg(org)
-    setRepo(repo)
-  }
+    dispatch(displayRepo({ org, repo }));
+  };
 
   const setJumpToPage = (page: number) => {
-    setPage(page)
-  }
+    dispatch(setCurrentPage(page));
+  };
 
   const showIssuesList = () => {
-    setCurrentDisplay({ type: 'issues' })
-  }
+    dispatch(setCurrentDisplayType({ displayType: "issues" }));
+  };
 
   const showIssueComments = (issueId: number) => {
-    setCurrentDisplay({ type: 'comments', issueId })
-  }
+    dispatch(setCurrentDisplayType({ displayType: "comments", issueId }));
+  };
 
-  let content
+  let content;
 
-  if (currentDisplay.type === 'issues') {
+  if (displayType === "issues") {
     content = (
       <React.Fragment>
         <RepoSearchForm
@@ -61,10 +65,9 @@ const App: React.FC = () => {
           showIssueComments={showIssueComments}
         />
       </React.Fragment>
-    )
-  } else {
-    const { issueId } = currentDisplay
-    const key = `${org}/${repo}/${issueId}`
+    );
+  } else if (issueId !== null) {
+    const key = `${org}/${repo}/${issueId}`;
     content = (
       <IssueDetailsPage
         key={key}
@@ -73,10 +76,10 @@ const App: React.FC = () => {
         issueId={issueId}
         showIssuesList={showIssuesList}
       />
-    )
+    );
   }
 
-  return <div className="App">{content}</div>
-}
+  return <div className="App">{content}</div>;
+};
 
-export default App
+export default App;
