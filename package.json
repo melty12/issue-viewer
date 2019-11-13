@@ -47,6 +47,7 @@
     ]
   },
   "devDependencies": {
+    "@reduxjs/toolkit": "^1.0.4",
     "prettier": "^1.18.2"
   }
 }

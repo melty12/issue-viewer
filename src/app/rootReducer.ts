@@ -1,8 +1,10 @@
 import { combineReducers } from "redux";
 import issuesDisplaySlice from "../features/issuesDisplay/issuesDisplaySlice";
+import repoDetailsReducer from "../features/repoSearch/repoDetailsSlice";
 
 const rootReducer = combineReducers({
-  issueDisplay: issuesDisplaySlice
+  issueDisplay: issuesDisplaySlice,
+  repoDetails: repoDetailsReducer
 });
 
 export type RootState = ReturnType<typeof rootReducer>;

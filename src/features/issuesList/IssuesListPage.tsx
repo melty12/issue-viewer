@@ -1,17 +1,21 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 
-import { getIssues, getRepoDetails, IssuesResult } from '../../api/githubAPI'
+import { getIssues, IssuesResult } from "../../api/githubAPI";
 
-import { IssuesPageHeader } from './IssuesPageHeader'
-import { IssuesList } from './IssuesList'
-import { IssuePagination, OnPageChangeCallback } from './IssuePagination'
+import { fetchIssuesCount } from "../repoSearch/repoDetailsSlice";
+import { RootState } from "../../app/rootReducer";
+
+import { IssuesPageHeader } from "./IssuesPageHeader";
+import { IssuesList } from "./IssuesList";
+import { IssuePagination, OnPageChangeCallback } from "./IssuePagination";
 
 interface ILProps {
-  org: string
-  repo: string
-  page: number
-  setJumpToPage: (page: number) => void
-  showIssueComments: (issueId: number) => void
+  org: string;
+  repo: string;
+  page: number;
+  setJumpToPage: (page: number) => void;
+  showIssueComments: (issueId: number) => void;
 }
 
 export const IssuesListPage = ({
@@ -21,44 +25,45 @@ export const IssuesListPage = ({
   setJumpToPage,
   showIssueComments
 }: ILProps) => {
+  const dispatch = useDispatch();
   const [issuesResult, setIssues] = useState<IssuesResult>({
     pageLinks: null,
     pageCount: 1,
     issues: []
-  })
-  const [numIssues, setNumIssues] = useState<number>(-1)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [issuesError, setIssuesError] = useState<Error | null>(null)
+  });
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [issuesError, setIssuesError] = useState<Error | null>(null);
+  const openIssueCount = useSelector(
+    (state: RootState) => state.repoDetails.openIssuesCount
+  );
 
-  const { issues, pageCount } = issuesResult
+  const { issues, pageCount } = issuesResult;
 
   useEffect(() => {
     async function fetchEverything() {
       async function fetchIssues() {
-        const issuesResult = await getIssues(org, repo, page)
-        setIssues(issuesResult)
-      }
-
-      async function fetchIssueCount() {
-        const repoDetails = await getRepoDetails(org, repo)
-        setNumIssues(repoDetails.open_issues_count)
+        const issuesResult = await getIssues(org, repo, page);
+        setIssues(issuesResult);
       }
 
       try {
-        await Promise.all([fetchIssues(), fetchIssueCount()])
-        setIssuesError(null)
+        await Promise.all([
+          fetchIssues(),
+          dispatch(fetchIssuesCount(org, repo))
+        ]);
+        setIssuesError(null);
       } catch (err) {
-        console.error(err)
-        setIssuesError(err)
+        console.error(err);
+        setIssuesError(err);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
 
-    fetchEverything()
-  }, [org, repo, page])
+    fetchEverything();
+  }, [org, repo, page, dispatch]);
 
   if (issuesError) {
     return (
@@ -66,25 +71,29 @@ export const IssuesListPage = ({
         <h1>Something went wrong...</h1>
         <div>{issuesError.toString()}</div>
       </div>
-    )
+    );
   }
 
-  const currentPage = Math.min(pageCount, Math.max(page, 1)) - 1
+  const currentPage = Math.min(pageCount, Math.max(page, 1)) - 1;
 
   let renderedList = isLoading ? (
     <h3>Loading...</h3>
   ) : (
     <IssuesList issues={issues} showIssueComments={showIssueComments} />
-  )
+  );
 
   const onPageChanged: OnPageChangeCallback = selectedItem => {
-    const newPage = selectedItem.selected + 1
-    setJumpToPage(newPage)
-  }
+    const newPage = selectedItem.selected + 1;
+    setJumpToPage(newPage);
+  };
 
   return (
     <div id="issue-list-page">
-      <IssuesPageHeader openIssuesCount={numIssues} org={org} repo={repo} />
+      <IssuesPageHeader
+        openIssuesCount={openIssueCount}
+        org={org}
+        repo={repo}
+      />
       {renderedList}
       <IssuePagination
         currentPage={currentPage}
@@ -92,5 +101,5 @@ export const IssuesListPage = ({
         onPageChange={onPageChanged}
       />
     </div>
-  )
-}
+  );
+};
