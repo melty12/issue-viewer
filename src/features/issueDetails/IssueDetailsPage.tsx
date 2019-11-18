@@ -40,7 +40,7 @@ export const IssueDetailsPage = ({
       return {
         commentsLoading: state.comments.loading,
         commentsError: state.comments.error,
-        comments: state.comments.commentsByIssue
+        comments: state.comments.commentsByIssue[issueId]
       };
     },
     shallowEqual
